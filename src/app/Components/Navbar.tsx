@@ -2,12 +2,9 @@
 
 import { IoMdMail } from "react-icons/io";
 import Link from 'next/link';
-import { useState } from "react";
 import { IoMdMenu, IoMdClose, IoMdLogOut } from "react-icons/io";
 
-export default function Layout() {
-    const [isOpen, setIsOpen] = useState(true);
-
+export default function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: boolean) => void }) {
     return (
         <>
             {/* Full-screen Navbar */}
@@ -17,10 +14,10 @@ export default function Layout() {
                     <span>Mailbox</span>
                 </h1>
                 <div className="flex items-center space-x-4">
-                    <button onClick={() => setIsOpen(!isOpen)} className="text-2xl bg-gray-200 p-2 rounded-full shadow-lg">
+                    <button onClick={() => setIsOpen(!isOpen)} className="text-2xl bg-gray-200 p-2 rounded-full shadow-md">
                         {isOpen ? <IoMdClose /> : <IoMdMenu />}
                     </button>
-                    <button className="text-2xl bg-gray-200 p-2 rounded-full shadow-lg">
+                    <button className="text-2xl bg-gray-200 p-2 rounded-full shadow-md">
                         <IoMdLogOut />
                     </button>
                 </div>
