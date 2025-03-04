@@ -20,8 +20,8 @@ const LoginForm = () => {
   const handleLogin = (e:React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
-      const storedUsername = process.env.NEXT_PUBLIC_MAIL_USERNAME;
-      const storedPassword = process.env.NEXT_PUBLIC_MAIL_PASSWORD;
+      const storedUsername = process.env.MAIL_USERNAME;
+      const storedPassword = process.env.MAIL_PASSWORD;
 
       console.log("Env Username:", storedUsername);
       console.log("Env Password:", storedPassword);
