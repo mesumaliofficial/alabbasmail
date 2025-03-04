@@ -17,7 +17,7 @@ const LoginForm = () => {
       }
   }, [router]);
 
-  const handleLogin = (e:any) => {
+  const handleLogin = (e:React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
       const storedUsername = process.env.NEXT_PUBLIC_MAIL_USERNAME;
