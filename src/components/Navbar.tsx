@@ -1,5 +1,5 @@
 "use client";
-import { useState,  useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaInbox, FaSignOutAlt, FaTimes, FaPaperPlane, FaFileAlt, FaTrash, FaSpa, FaPen } from "react-icons/fa";
 import { FaBars, FaBell, FaEnvelope } from "react-icons/fa6";
@@ -19,7 +19,7 @@ const Navbar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (value: boo
         localStorage.removeItem("isLoggedIn");
         router.push("/");
     };
-
+    const [isComposeOpen, setIsComposeOpen] = useState(false);
     return (
         <>
             <nav className="py-3 px-10 bg-white shadow-md flex items-center justify-between">
@@ -104,13 +104,49 @@ const Navbar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (value: boo
                 </ul>
                 {/* Compose Button */}
                 <button
-                    onClick={() => router.push("/compose")}
+                    onClick={() => setIsComposeOpen(true)}
                     className="absolute bottom-24 left-5 w-52 px-5 py-3 bg-blue-600 text-white rounded-full flex items-center justify-center space-x-2 hover:bg-blue-700 transition"
                 >
                     <FaPen />
                     <span>Compose</span>
                 </button>
             </aside>
+
+            {isComposeOpen && (
+    <div className="fixed right-4 bottom-4 w-[400px] bg-white shadow-2xl border border-gray-300 rounded-2xl overflow-hidden">
+    {/* Header Strip */}
+    <div className="bg-gradient-to-r from-black to-gray-800 p-4 flex justify-between items-center border-b border-gray-500">
+      <h2 className="text-lg text-white font-semibold">New Email</h2>
+      <button className="text-white hover:text-red-400 transition" onClick={() => setIsComposeOpen(false)}>
+        <FaTimes size={20} />
+      </button>
+    </div>
+
+    {/* Email Form */}
+    <div className="p-5 space-y-4">
+      <input
+        type="email"
+        placeholder="Recipient Email"
+        className="w-full p-3 bg-gray-100 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black/40 shadow-sm transition"
+        required
+      />
+      <input
+        type="text"
+        placeholder="Subject"
+        className="w-full p-3 bg-gray-100 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black/40 shadow-sm transition"
+        required
+      />
+      <textarea
+        placeholder="Message"
+        className="w-full p-3 bg-gray-100 rounded-xl border border-gray-300 h-32 focus:outline-none focus:ring-2 focus:ring-black/40 shadow-sm transition"
+        required
+      ></textarea>
+        <button className="w-full bg-black/90 text-white p-3 rounded-xl hover:bg-black/80 transition shadow-lg font-semibold flex items-center justify-center gap-2">
+          <FaPaperPlane size={18} /> Send
+        </button>
+    </div>
+  </div>
+            )}
         </>
     );
 };
