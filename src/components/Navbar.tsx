@@ -1,11 +1,17 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaInbox, FaSignOutAlt, FaTimes, FaPaperPlane, FaFileAlt, FaTrash, FaSpa, FaPen } from "react-icons/fa";
+import { FaInbox, FaSignOutAlt, FaTimes, FaPaperPlane, FaFileAlt, FaTrash, FaSpa, FaPen, FaPaperclip } from "react-icons/fa";
 import { FaBars, FaBell, FaEnvelope } from "react-icons/fa6";
 
-const Navbar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (value: boolean) => void }) => {
-    const [activeTab, setActiveTab] = useState("Inbox");
+interface FormData {
+    to: string;
+    subject: string;
+    message: string;
+    attachments: File[];
+}
+
+const Navbar = ({ isOpen, setIsOpen, activeTab, setActiveTab }: { activeTab: string; setActiveTab: (tab: string) => void; isOpen: boolean; setIsOpen: (value: boolean) => void }) => {
     const router = useRouter();
 
     useEffect(() => {
@@ -19,67 +25,105 @@ const Navbar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (value: boo
         localStorage.removeItem("isLoggedIn");
         router.push("/");
     };
+
     const [isComposeOpen, setIsComposeOpen] = useState(false);
+    const [formData, setFormData] = useState<FormData>({
+        to: "",
+        subject: "",
+        message: "",
+        attachments: [],
+    });
+
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState("");
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files) return;
+
+        const newFiles = Array.from(files);
+        const validTypes = ["image/png", "image/jpeg", "application/pdf", "text/plain"];
+        const filteredFiles = newFiles.filter((file) => validTypes.includes(file.type));
+
+        if (filteredFiles.length !== newFiles.length) {
+            alert("❌ Some files were removed due to invalid format! (Allowed: PNG, JPEG, PDF, TXT)");
+        }
+
+        setFormData((prev) => ({
+            ...prev,
+            attachments: [...prev.attachments, ...filteredFiles],
+        }));
+    };
+
+    const removeAttachment = (index: number) => {
+        setFormData((prev) => ({
+            ...prev,
+            attachments: prev.attachments.filter((_, i) => i !== index),
+        }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setStatus("");
+    
+        try {
+            const response = await fetch("/api/sendEmail", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    to: formData.to,
+                    subject: formData.subject,
+                    message: formData.message,
+                }),
+            });
+    
+            const result = await response.json();
+            if (result.success) {
+                setStatus("✅ Email Sent & Saved!");
+                setFormData({ to: "", subject: "", message: "", attachments: [] });
+            } else {
+                setStatus("❌ Error Saving Email!");
+            }
+        } catch (error) {
+            setStatus("❌ Failed to Send Email.");
+        }
+    
+        setLoading(false);
+    };
+    
+
+    
+
     return (
         <>
             <nav className="py-3 px-10 bg-white shadow-md flex items-center justify-between">
-                {/* Left Side: Logo & Menu Button */}
                 <div className="flex items-center space-x-4">
-                    <button
-                        onClick={handleLogout}
-                        className="text-2xl flex items-center space-x-2 font-bold text-blue-950"
-                    >
+                    <button onClick={handleLogout} className="text-2xl flex items-center space-x-2 font-bold text-blue-950">
                         <FaInbox size={30} />
                         <span>Mail Box</span>
                     </button>
-
-                    <button
-                        className="text-2xl ml-16 font-light focus:outline-none"
-                        onClick={() => setIsOpen(!isOpen)}
-                    >
+                    <button className="text-2xl ml-16 font-light focus:outline-none" onClick={() => setIsOpen(!isOpen)}>
                         {isOpen ? <FaTimes /> : <FaBars />}
                     </button>
                 </div>
 
-                {/* Center: Search Bar */}
-                <div className="hidden md:flex ml-4 items-center bg-gray-100 border border-gray-300 px-3 py-1 rounded-full">
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        className="bg-transparent outline-none px-2 text-gray-800 w-60"
-                    />
-                </div>
-
-                {/* Right Side: Fully Right Aligned Icons */}
                 <div className="flex items-center space-x-6 ml-auto">
-                    {/* Message Icon with Notification */}
-                    <div className="relative">
-                        <button className="text-2xl text-gray-700 hover:text-blue-700 focus:outline-none">
-                            <FaEnvelope />
-                        </button>
-                        <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">0</span>
-                    </div>
-
-                    {/* Notification Bell */}
                     <button className="text-2xl text-gray-700 hover:text-blue-700 focus:outline-none">
                         <FaBell />
                     </button>
 
-                    {/* Logout Button with Icon */}
-                    <button
-                        onClick={() => {
-                            localStorage.removeItem("isLoggedIn");
-                            router.push("/");
-                        }}
-                        className="px-4 py-1 flex items-center space-x-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none"
-                    >
+                    <button onClick={handleLogout} className="px-4 py-1 flex items-center space-x-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none">
                         <FaSignOutAlt />
                         <span>Logout</span>
                     </button>
                 </div>
             </nav>
 
-            {/* Sidebar */}
             <aside className={`fixed top-[59px] left-0 h-full w-64 bg-black/80 text-white transition-transform transform ${isOpen ? "translate-x-0" : "-translate-x-64"}`}>
                 <ul className="mt-4 space-y-2 p-3">
                     {[
@@ -87,12 +131,10 @@ const Navbar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (value: boo
                         { name: "Sent", route: "/sent", icon: <FaPaperPlane /> },
                         { name: "Drafts", route: "/drafts", icon: <FaFileAlt /> },
                         { name: "Spam", route: "/spam", icon: <FaSpa /> },
-                        { name: "Trash", route: "/trash", icon: <FaTrash /> }
+                        { name: "Trash", route: "/trash", icon: <FaTrash /> },
                     ].map((item) => (
-                        <li
-                            key={item.name}
-                            className={`flex items-center p-3 cursor-pointer space-x-3 rounded-lg transition duration-200 
-                            ${activeTab === item.name ? "bg-blue-800 border-l-4 border-white" : "hover:bg-blue-800"}`}
+                        <li key={item.name} className={`flex items-center p-3 cursor-pointer space-x-3 rounded-lg transition duration-200 
+                        ${activeTab === item.name ? "bg-gray-600 border-l-4 border-white" : "hover:bg-gray-600"}`}
                             onClick={() => {
                                 setActiveTab(item.name);
                                 router.push(item.route);
@@ -102,53 +144,82 @@ const Navbar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (value: boo
                         </li>
                     ))}
                 </ul>
-                {/* Compose Button */}
-                <button
-                    onClick={() => setIsComposeOpen(true)}
-                    className="absolute bottom-24 left-5 w-52 px-5 py-3 bg-blue-600 text-white rounded-full flex items-center justify-center space-x-2 hover:bg-blue-700 transition"
-                >
+
+                <button onClick={() => setIsComposeOpen(true)} className="absolute bottom-24 left-5 w-52 px-5 py-3 bg-gray-500 text-white rounded-full flex items-center justify-center space-x-2 hover:bg-gray-800 transition">
                     <FaPen />
                     <span>Compose</span>
                 </button>
             </aside>
 
             {isComposeOpen && (
-    <div className="fixed right-4 bottom-4 w-[400px] bg-white shadow-2xl border border-gray-300 rounded-2xl overflow-hidden">
-    {/* Header Strip */}
-    <div className="bg-gradient-to-r from-black to-gray-800 p-4 flex justify-between items-center border-b border-gray-500">
-      <h2 className="text-lg text-white font-semibold">New Email</h2>
-      <button className="text-white hover:text-red-400 transition" onClick={() => setIsComposeOpen(false)}>
-        <FaTimes size={20} />
-      </button>
-    </div>
+                <div className="fixed right-4 bottom-4 w-[400px] bg-white shadow-2xl border border-gray-300 rounded-2xl overflow-hidden">
+                    <div className="bg-gradient-to-r from-black to-gray-800 p-4 flex justify-between items-center border-b border-gray-500">
+                        <h2 className="text-lg text-white font-semibold">New Email</h2>
+                        <button className="text-white hover:text-red-400 transition" onClick={() => setIsComposeOpen(false)}>
+                            <FaTimes size={20} />
+                        </button>
+                    </div>
 
-    {/* Email Form */}
-    <div className="p-5 space-y-4">
-      <input
-        type="email"
-        placeholder="Recipient Email"
-        className="w-full p-3 bg-gray-100 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black/40 shadow-sm transition"
-        required
-      />
-      <input
-        type="text"
-        placeholder="Subject"
-        className="w-full p-3 bg-gray-100 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black/40 shadow-sm transition"
-        required
-      />
-      <textarea
-        placeholder="Message"
-        className="w-full p-3 bg-gray-100 rounded-xl border border-gray-300 h-32 focus:outline-none focus:ring-2 focus:ring-black/40 shadow-sm transition"
-        required
-      ></textarea>
-        <button className="w-full bg-black/90 text-white p-3 rounded-xl hover:bg-black/80 transition shadow-lg font-semibold flex items-center justify-center gap-2">
-          <FaPaperPlane size={18} /> Send
-        </button>
-    </div>
-  </div>
+                    <form className="p-5 space-y-4" onSubmit={handleSubmit}>
+                        <input type="email" name="to" value={formData.to} onChange={handleChange} placeholder="Recipient Email" className="w-full p-3 bg-gray-100 rounded-xl border border-gray-300" required />
+                        <input type="text" name="subject" value={formData.subject} onChange={handleChange} placeholder="Subject" className="w-full p-3 bg-gray-100 rounded-xl border border-gray-300" required />
+                        <textarea name="message" value={formData.message} onChange={handleChange} placeholder="Message" className="w-full p-3 bg-gray-100 rounded-xl border border-gray-300 h-32" required></textarea>
+
+                        <label className="flex items-center gap-2 cursor-pointer text-gray-700">
+                            <FaPaperclip size={18} />
+                            <span>Attach Files</span>
+                            <input type="file" onChange={handleFileChange} className="hidden" multiple />
+                        </label>
+
+                        {formData.attachments.map((file, index) => (
+                            <div key={index} className="flex justify-between bg-gray-100 px-3 py-2 rounded-md mt-1">
+                                <span>{file.name}</span>
+                                <button onClick={() => removeAttachment(index)} className="text-red-500"><FaTimes /></button>
+                            </div>
+                        ))}
+
+                        <button type="submit" className="w-full bg-black/90 text-white p-3 rounded-xl">Send</button>
+                    </form>
+                    {status && <p className="text-center text-sm font-medium text-gray-700 pb-2">{status}</p>}
+                </div>
             )}
         </>
     );
 };
-
 export default Navbar;
+
+
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@sanity/client";
+
+const client = createClient({
+    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "", // ✅ Avoid undefined error
+    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || "production", // ✅ Default to "production"
+    apiVersion: "2023-03-01", // ✅ Always set API version
+    useCdn: false, // ✅ Disable CDN for real-time updates
+    token: process.env.SANITY_API_TOKEN || "", // ✅ Ensure token is provided
+});
+
+export async function POST(req: NextRequest) {
+    try {
+        const { to, subject, message } = await req.json();
+
+        // Fake email sending logic (you can integrate with a service like Nodemailer or any other service)
+        console.log("Sending email to:", to);
+
+        // Save the email in Sanity
+        const newEmail = await client.create({
+            _type: "sentEmails",
+            to,
+            subject,
+            message,
+            sentAt: new Date().toISOString(),
+            isSeen: false,
+        });
+
+        return NextResponse.json({ success: true, email: newEmail });
+    } catch (error) {
+        console.error("Error sending email:", error);
+        return NextResponse.json({ success: false, error: "Email not sent" });
+    }
+}
