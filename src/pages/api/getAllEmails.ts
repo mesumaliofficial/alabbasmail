@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { client } from "@/sanity/lib/client";
+import { client } from "@/sanity/lib/client"; // ✅ Sanity Client Import
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
@@ -7,10 +7,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const emails = await client.fetch(`*[_type == "sentEmails"] | order(sentAt desc)`);
+    console.log("🚀 Fetching All Emails...");
+
+    const query = `*[_type == "sentEmails"] | order(sentAt desc)`;
+    const emails = await client.fetch(query);
+
+    console.log("✅ Emails Fetched:", emails);
     return res.status(200).json(emails);
-  } catch (error: any) {
-    console.error("❌ Error in getSentEmails API:", error);
+  } catch (error) {
+    console.error("❌ Error in getAllEmails API:", error);
     return res.status(500).json({ error: "Failed to fetch emails" });
   }
 }

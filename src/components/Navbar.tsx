@@ -70,7 +70,7 @@ const Navbar = ({ isOpen, setIsOpen, activeTab, setActiveTab }: { activeTab: str
         e.preventDefault();
         setLoading(true);
         setStatus("");
-    
+
         try {
             const response = await fetch("/api/sendEmail", {
                 method: "POST",
@@ -81,7 +81,7 @@ const Navbar = ({ isOpen, setIsOpen, activeTab, setActiveTab }: { activeTab: str
                     message: formData.message,
                 }),
             });
-    
+
             const result = await response.json();
             if (result.success) {
                 setStatus("✅ Email Sent & Saved!");
@@ -92,12 +92,12 @@ const Navbar = ({ isOpen, setIsOpen, activeTab, setActiveTab }: { activeTab: str
         } catch (error) {
             setStatus("❌ Failed to Send Email.");
         }
-    
+
         setLoading(false);
     };
-    
 
-    
+
+
 
     return (
         <>
@@ -178,7 +178,9 @@ const Navbar = ({ isOpen, setIsOpen, activeTab, setActiveTab }: { activeTab: str
                             </div>
                         ))}
 
-                        <button type="submit" className="w-full bg-black/90 text-white p-3 rounded-xl">Send</button>
+                        <button type="submit" disabled={loading} className={`w-full p-3 rounded-xl text-white transition ${loading ? "bg-gray-500 cursor-not-allowed" : "bg-black/90 hover:bg-black"}`}>
+                            {loading ? "Sending..." : "Send"}
+                        </button>
                     </form>
                     {status && <p className="text-center text-sm font-medium text-gray-700 pb-2">{status}</p>}
                 </div>

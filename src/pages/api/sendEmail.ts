@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import nodemailer from "nodemailer";
-import { client } from "@/sanity/lib/client"; // Sanity Client Import
+import { client } from "@/sanity/lib/client";
+import { v4 as uuidv4 } from "uuid";
 
 interface EmailRequest {
   to: string;
   subject: string;
   message: string;
-  attachments?: { filename: string; content: string; encoding: string }[];
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -14,14 +14,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  const { to, subject, message, attachments }: EmailRequest = req.body;
-
+  const { to, subject, message }: EmailRequest = req.body;
   if (!to || !subject || !message) {
     return res.status(400).json({ error: "All fields are required!" });
   }
 
   try {
     console.log("🚀 Sending Email to:", to);
+
+    const emailId = uuidv4(); // Unique Email ID
+    const trackingPixelUrl = `http://localhost:3000/api/trackOpen?emailId=${emailId}&t=${Date.now()}`;
 
     let transporter = nodemailer.createTransport({
       service: "gmail",
@@ -31,45 +33,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    let mailOptions: any = {
+    let mailOptions = {
       from: `"Mesum Ali" <${process.env.GMAIL_USER}>`,
       to,
       subject,
       html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
-          <div style="max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-            <h2 style="color: #333;">You've Got Mail! 📬</h2>
-            <p style="font-size: 16px; color: #555;">${message}</p>
-            <hr style="border: none; border-top: 1px solid #ddd;">
-            <p style="text-align: center; font-size: 14px; color: #888;">Sent from Al-Abbas Electric</p>
-          </div>
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>You've Got Mail! 📬</h2>
+          <p>${message}</p>
+          <p>Sent from Al-Abbas Electric</p>
+
+          <!-- Tracking Pixel -->
+          <img src="${trackingPixelUrl}" width="1" height="1" style="display:none;" />
         </div>
       `,
     };
 
-    if (attachments && attachments.length > 0) {
-      mailOptions.attachments = attachments.map((file) => ({
-        filename: file.filename,
-        content: file.content,
-        encoding: file.encoding,
-      }));
-    }
-
-    // ✅ **Send Email**
     await transporter.sendMail(mailOptions);
     console.log("✅ Email Sent Successfully!");
 
-    // ✅ **Sanity mein Save Karna**
-    const newEmail = await client.create({
+    await client.create({
       _type: "sentEmails",
+      _id: emailId,
       to,
       subject,
       message,
       sentAt: new Date().toISOString(),
-      isSeen: false, // By default false
+      isSeen: false, // Default false
     });
-
-    console.log("✅ Email Saved in Sanity:", newEmail);
 
     return res.status(200).json({ success: true, message: "Email Sent & Saved Successfully!" });
   } catch (error: any) {
