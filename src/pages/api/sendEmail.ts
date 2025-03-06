@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log("🚀 Sending Email to:", to);
 
     const emailId = uuidv4(); // Unique Email ID
-    const trackingPixelUrl = `http://localhost:3000/api/trackOpen?emailId=${emailId}&t=${Date.now()}`;
+    const trackingPixelUrl = `https://alabbasmail.vercel.app/api/trackOpen?emailId=${emailId}&t=${Date.now()}`;
 
     // ✅ Use const instead of let
     const transporter = nodemailer.createTransport({
