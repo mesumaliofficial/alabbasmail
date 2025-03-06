@@ -3,21 +3,26 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa";
 
+type Email = {
+    subject: string;
+    to: string;
+    message: string;
+};
+
 const EmailDetails = () => {
     const params = useParams();
     const router = useRouter();
     
-    // ✅ Convert id to string properly
     const id = Array.isArray(params?.id) ? params.id[0] : params?.id || "";
 
-    const [email, setEmail] = useState<any>(null);
+    const [email, setEmail] = useState<Email | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchEmail = async () => {
             try {
                 const response = await fetch(`/api/getEmailById?id=${id}`);
-                const data = await response.json();
+                const data: Email = await response.json();
                 setEmail(data);
             } catch (error) {
                 console.error("Error fetching email:", error);

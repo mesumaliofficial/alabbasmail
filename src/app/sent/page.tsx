@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import { useState } from "react";
 import SentMails from "./sent";
 
-const inbox = () => {
+const Inbox = () => {
     const [isOpen, setIsOpen] = useState(true);
     const [activeTab, setActiveTab] = useState("Sent");
     return (
@@ -18,4 +18,4 @@ const inbox = () => {
     );
 }
 
-export default inbox
+export default Inbox
