@@ -25,7 +25,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const emailId = uuidv4(); // Unique Email ID
     const trackingPixelUrl = `http://localhost:3000/api/trackOpen?emailId=${emailId}&t=${Date.now()}`;
 
-    let transporter = nodemailer.createTransport({
+    // ✅ Use const instead of let
+    const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: process.env.GMAIL_USER,
@@ -33,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    let mailOptions = {
+    const mailOptions = {
       from: `"Mesum Ali" <${process.env.GMAIL_USER}>`,
       to,
       subject,
@@ -63,8 +64,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     return res.status(200).json({ success: true, message: "Email Sent & Saved Successfully!" });
-  } catch (error: any) {
+  } catch (error: unknown) {  // ✅ Use unknown instead of any
     console.error("❌ Error in sendEmail API:", error);
-    return res.status(500).json({ success: false, error: error.message });
+
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "An unknown error occurred",
+    });
   }
 }
