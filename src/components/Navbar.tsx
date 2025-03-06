@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaInbox, FaSignOutAlt, FaTimes, FaPaperPlane, FaFileAlt, FaTrash, FaSpa, FaPen, FaPaperclip } from "react-icons/fa";
-import { FaBars, FaBell, } from "react-icons/fa6";
+import { FaBars, FaBell } from "react-icons/fa6";
 
 interface FormData {
     to: string;
@@ -11,7 +11,17 @@ interface FormData {
     attachments: File[];
 }
 
-const Navbar = ({ isOpen, setIsOpen, activeTab, setActiveTab }: { activeTab: string; setActiveTab: (tab: string) => void; isOpen: boolean; setIsOpen: (value: boolean) => void }) => {
+const Navbar = ({
+    isOpen,
+    setIsOpen,
+    activeTab,
+    setActiveTab,
+}: {
+    activeTab: string;
+    setActiveTab: (tab: string) => void;
+    isOpen: boolean;
+    setIsOpen: (value: boolean) => void;
+}) => {
     const router = useRouter();
 
     useEffect(() => {
@@ -90,14 +100,12 @@ const Navbar = ({ isOpen, setIsOpen, activeTab, setActiveTab }: { activeTab: str
                 setStatus("❌ Error Saving Email!");
             }
         } catch (error) {
+            console.error("Error sending email:", error); // Log the error
             setStatus("❌ Failed to Send Email.");
         }
 
         setLoading(false);
     };
-
-
-
 
     return (
         <>
@@ -133,8 +141,10 @@ const Navbar = ({ isOpen, setIsOpen, activeTab, setActiveTab }: { activeTab: str
                         { name: "Spam", route: "/spam", icon: <FaSpa /> },
                         { name: "Trash", route: "/trash", icon: <FaTrash /> },
                     ].map((item) => (
-                        <li key={item.name} className={`flex items-center p-3 cursor-pointer space-x-3 rounded-lg transition duration-200 
-                        ${activeTab === item.name ? "bg-gray-600 border-l-4 border-white" : "hover:bg-gray-600"}`}
+                        <li
+                            key={item.name}
+                            className={`flex items-center p-3 cursor-pointer space-x-3 rounded-lg transition duration-200 
+                            ${activeTab === item.name ? "bg-gray-600 border-l-4 border-white" : "hover:bg-gray-600"}`}
                             onClick={() => {
                                 setActiveTab(item.name);
                                 router.push(item.route);
@@ -189,39 +199,3 @@ const Navbar = ({ isOpen, setIsOpen, activeTab, setActiveTab }: { activeTab: str
     );
 };
 export default Navbar;
-
-
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@sanity/client";
-
-const client = createClient({
-    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "", // ✅ Avoid undefined error
-    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || "production", // ✅ Default to "production"
-    apiVersion: "2023-03-01", // ✅ Always set API version
-    useCdn: false, // ✅ Disable CDN for real-time updates
-    token: process.env.SANITY_API_TOKEN || "", // ✅ Ensure token is provided
-});
-
-export async function POST(req: NextRequest) {
-    try {
-        const { to, subject, message } = await req.json();
-
-        // Fake email sending logic (you can integrate with a service like Nodemailer or any other service)
-        console.log("Sending email to:", to);
-
-        // Save the email in Sanity
-        const newEmail = await client.create({
-            _type: "sentEmails",
-            to,
-            subject,
-            message,
-            sentAt: new Date().toISOString(),
-            isSeen: false,
-        });
-
-        return NextResponse.json({ success: true, email: newEmail });
-    } catch (error) {
-        console.error("Error sending email:", error);
-        return NextResponse.json({ success: false, error: "Email not sent" });
-    }
-}
