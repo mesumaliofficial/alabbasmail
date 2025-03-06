@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const emails = await client.fetch(`*[_type == "sentEmails"] | order(sentAt desc)`);
     return res.status(200).json(emails);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ Error in getSentEmails API:", error);
     return res.status(500).json({ error: "Failed to fetch emails" });
   }
