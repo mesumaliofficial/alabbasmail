@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaInbox, FaSignOutAlt, FaTimes, FaPaperPlane, FaFileAlt, FaTrash, FaSpa, FaPen, FaPaperclip, FaSearch } from "react-icons/fa";
+import { FaInbox, FaSignOutAlt, FaTimes, FaPaperPlane, FaFileAlt, FaTrash, FaSpa, FaPen, FaPaperclip, } from "react-icons/fa";
 import { FaBars, FaBell } from "react-icons/fa6";
 
 interface FormData {
