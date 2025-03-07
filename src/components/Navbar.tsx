@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaInbox, FaSignOutAlt, FaTimes, FaPaperPlane, FaFileAlt, FaTrash, FaSpa, FaPen, FaPaperclip } from "react-icons/fa";
+import { FaInbox, FaSignOutAlt, FaTimes, FaPaperPlane, FaFileAlt, FaTrash, FaSpa, FaPen, FaPaperclip, FaSearch } from "react-icons/fa";
 import { FaBars, FaBell } from "react-icons/fa6";
 
 interface FormData {
@@ -109,7 +109,7 @@ const Navbar = ({
 
     return (
         <>
-            <nav className="py-3 px-10 bg-white shadow-md flex items-center justify-between">
+            <nav className="py-3 px-5 bg-white shadow-md flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                     <button onClick={handleLogout} className="text-2xl flex items-center space-x-2 font-bold text-blue-950">
                         <FaInbox size={30} />
