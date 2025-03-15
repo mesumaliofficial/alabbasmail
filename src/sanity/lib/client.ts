@@ -13,6 +13,6 @@ export const client = createClient({
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
   useCdn: false,
   apiVersion: "2024-03-15", // Use current date YYYY-MM-DD
-  token: process.env.SANITY_API_TOKEN,
+  token: process.env.NEXT_PUBLIC_SANITY_API_TOKEN,
   perspective: "published"
 });
