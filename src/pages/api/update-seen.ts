@@ -4,9 +4,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 const client = createClient({
   projectId: "2nkjtw4g", // ✅ Apna Sanity Project ID lagao
   dataset: "production",
-  useCdn: false,
+  useCdn: false,  
   apiVersion: "2023-01-01",
-  token: "process.env.SANITY_API_TOKEN" // ✅ Apna secret token lagao
+  token: process.env.NEXT_PUBLIC_SANITY_API_TOKEN // ✅ Apna secret token lagao
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

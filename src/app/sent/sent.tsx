@@ -64,6 +64,7 @@ const SentMails: React.FC = () => {
 
     useEffect(() => {
         if (selectedEmail && !selectedEmail.isSeen) {
+            console.log("📝 Updating email status:", selectedEmail._id);
             fetch("/api/updateEmailStatus", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
@@ -71,14 +72,17 @@ const SentMails: React.FC = () => {
             })
             .then((res) => {
                 if (res.ok) {
+                    console.log("✅ Email status updated successfully");
                     setSentEmails((prevEmails) =>
                         prevEmails.map((email) =>
                             email._id === selectedEmail._id ? { ...email, isSeen: true } : email
                         )
                     );
+                } else {
+                    console.error("❌ Failed to update email status");
                 }
             })
-            .catch((err) => console.error("Failed to update seen status", err));
+            .catch((err) => console.error("❌ Error updating seen status:", err));
         }
     }, [selectedEmail]);
 
@@ -95,14 +99,27 @@ const SentMails: React.FC = () => {
 
                     <h2 className="text-xl font-semibold">{selectedEmail.subject}</h2>
                     <p className="text-gray-500 text-sm">To: {selectedEmail.to}</p>
+                    <p className="text-gray-500 text-sm">Sent: {formatDateTime(selectedEmail.sentAt)}</p>
                     <hr className="my-3" />
-                    <p className="text-gray-800">{selectedEmail.message}</p>
+                    <div className="prose max-w-none">
+                        {selectedEmail.message}
+                    </div>
                 </div>
             ) : (
                 <>
                     <h1 className="text-2xl font-bold mb-4">Sent Mails</h1>
-                    {loading && <p>Loading emails...</p>}
-                    {error && <p className="text-red-500">{error}</p>}
+                    {loading && (
+                        <div className="text-center py-4">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                            <p className="mt-2 text-gray-600">Loading emails...</p>
+                        </div>
+                    )}
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+                            <strong className="font-bold">Error: </strong>
+                            <span className="block sm:inline">{error}</span>
+                        </div>
+                    )}
                     {!loading && !error && (
                         <div className="overflow-x-auto">
                             <table className="w-full border-collapse border border-gray-300">

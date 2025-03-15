@@ -6,7 +6,7 @@ const client = createClient({
   dataset: "production",
   useCdn: false,
   apiVersion: "2022-06-01",
-  token: process.env.SANITY_API_TOKEN,
+  token: process.env.NEXT_PUBLIC_SANITY_API_TOKEN,
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
