@@ -36,33 +36,6 @@ const formatDate = (dateString: string) => {
     return `${day}/${month}/${year} / ${hours}:${minutes}${ampm}`;
 };
 
-const EmailContent: React.FC<{ email: Email }> = ({ email }) => {
-    console.log('Rendering email content:', {
-        id: email.id,
-        isHtml: email.isHtml,
-        bodyLength: email.body.length,
-        bodyPreview: email.body.substring(0, 100) + '...'
-    });
-
-    return (
-        <div className="bg-white rounded-lg shadow-md p-6 max-w-4xl mx-auto">
-            <div className="mb-6 border-b pb-4">
-                <h2 className="text-2xl font-semibold mb-2">{email.subject}</h2>
-                <div className="text-gray-600">
-                    <p><strong>From:</strong> {email.sender}</p>
-                    <p><strong>Date:</strong> {formatDate(email.date)}</p>
-                </div>
-            </div>
-            <div 
-                className={`email-content overflow-auto max-h-[70vh] ${
-                    email.isHtml ? 'html-email' : 'text-email'
-                }`}
-                dangerouslySetInnerHTML={{ __html: email.body }}
-            />
-        </div>
-    );
-};
-
 const MailInbox = () => {
     const [emails, setEmails] = useState<Email[]>([]);
     const [loading, setLoading] = useState(false);
