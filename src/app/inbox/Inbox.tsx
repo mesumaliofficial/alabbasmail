@@ -99,6 +99,11 @@ const MailInbox = () => {
         }
     };
 
+    // Call fetchEmails when component mounts
+    useEffect(() => {
+        void fetchEmails();
+    }, []);
+
     // Add styles for HTML emails
     useEffect(() => {
         const style = document.createElement('style');

@@ -1,29 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { connect, ImapSimpleOptions, Message } from "imap-simple";
+import { connect, ImapSimpleOptions, Message, ImapSimple } from "imap-simple";
 import { simpleParser, ParsedMail, Attachment } from "mailparser";
-import * as Imap from "imap";
 
-interface EmailData {
-    id: string;
-    threadId: string;
-    labelIds: string[];
-    snippet: string;
-    payload: {
-        headers: Array<{
-            name: string;
-            value: string;
-        }>;
-        parts?: Array<{
-            mimeType: string;
-            body: {
-                data?: string;
-            };
-        }>;
-        body?: {
-            data?: string;
-        };
-    };
-    internalDate: string;
+interface ImapMessagePart {
+    which: string;
+    body: unknown;
+    size?: number;
 }
 
 interface Email {
@@ -38,12 +20,6 @@ interface Email {
     isUnread: boolean;
     body: string;
     isHtml: boolean;
-}
-
-interface ImapMessagePart {
-    which: string;
-    body: any;
-    size?: number;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -78,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
     };
 
-    let connection: any | null = null;
+    let connection: ImapSimple | null = null;
 
     try {
         console.log("Attempting IMAP connection...");
