@@ -16,6 +16,13 @@ interface Email {
     isHtml: boolean;
 }
 
+interface ApiResponse {
+    success: boolean;
+    message?: string;
+    error?: string;
+    emails?: Email[];
+}
+
 const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Invalid Date";
@@ -58,39 +65,39 @@ const EmailContent: React.FC<{ email: Email }> = ({ email }) => {
 
 const MailInbox = () => {
     const [emails, setEmails] = useState<Email[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
 
-    useEffect(() => {
-        const fetchEmails = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                const response = await fetch("/api/getEmails");
-                if (!response.ok) {
-                    throw new Error(`API Error: ${response.statusText}`);
-                }
-                const data = await response.json();
-                console.log('Fetched emails:', {
-                    count: data.length,
-                    sample: data[0] ? {
-                        id: data[0].id,
-                        subject: data[0].subject,
-                        hasHtml: data[0].isHtml
-                    } : 'No emails'
-                });
-                setEmails(data);
-            } catch (error: any) {
-                console.error("Failed to fetch emails:", error);
-                setError(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchEmails = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            
+            const response = await fetch('/api/getEmails');
+            const data: ApiResponse = await response.json();
 
-        fetchEmails();
-    }, []);
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to fetch emails');
+            }
+
+            if (data.emails) {
+                // Ensure all required properties are present
+                const processedEmails = data.emails.map(email => ({
+                    ...email,
+                    senderFull: email.senderFull || email.sender,
+                    subjectFull: email.subjectFull || email.subject,
+                    previewFull: email.previewFull || email.preview
+                }));
+                setEmails(processedEmails);
+            }
+        } catch (error: unknown) {
+            console.error('Error fetching emails:', error);
+            setError(error instanceof Error ? error.message : 'Failed to fetch emails');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Add styles for HTML emails
     useEffect(() => {
@@ -161,13 +168,13 @@ const MailInbox = () => {
                         </button>
                         <div className="email-header mb-6 pb-4 border-b border-gray-200">
                             <h2 className="text-2xl font-normal text-[#202124] mb-4">
-                                {selectedEmail.subjectFull}
+                                {selectedEmail.subject}
                             </h2>
                             <div className="flex items-start space-x-4">
                                 <div className="flex-1">
                                     <div className="flex items-center mb-1">
                                         <span className="font-medium text-[#202124]">
-                                            {selectedEmail.senderFull}
+                                            {selectedEmail.sender}
                                         </span>
                                     </div>
                                     <div className="text-sm text-gray-600">
@@ -205,7 +212,7 @@ const MailInbox = () => {
                                 >
                                     <td 
                                         className="border border-gray-300 p-2" 
-                                        title={email.senderFull}
+                                        title={email.sender}
                                     >
                                         <span className="text-[#1a73e8] hover:underline">
                                             {email.sender}
@@ -213,7 +220,7 @@ const MailInbox = () => {
                                     </td>
                                     <td 
                                         className="border border-gray-300 p-2" 
-                                        title={email.subjectFull}
+                                        title={email.subject}
                                     >
                                         <span className={email.isUnread ? "font-semibold" : ""}>
                                             {email.subject}
@@ -221,7 +228,7 @@ const MailInbox = () => {
                                     </td>
                                     <td 
                                         className="border border-gray-300 p-2" 
-                                        title={email.previewFull}
+                                        title={email.preview}
                                     >
                                         {email.preview}
                                     </td>

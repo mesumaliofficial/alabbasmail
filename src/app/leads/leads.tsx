@@ -96,7 +96,6 @@ const MailLeads = () => {
             setError(null);
             setSuccessMessage(null);
             
-            // Add current time to the lead data
             const leadWithTime = {
                 ...lead,
                 addedAt: new Date().toISOString()
@@ -116,13 +115,12 @@ const MailLeads = () => {
                 throw new Error(data.error || "Failed to add/update lead");
             }
 
-            // Show success message
             setSuccessMessage(data.message);
             await fetchLeads();
             return true;
-        } catch (err: any) {
-            console.error("Error adding/updating lead:", err);
-            setError(err.message || "Failed to add/update lead. Please try again later.");
+        } catch (error: unknown) {
+            console.error("Error adding/updating lead:", error);
+            setError(error instanceof Error ? error.message : "Failed to add/update lead. Please try again later.");
             return false;
         } finally {
             setLoading(false);
@@ -168,14 +166,24 @@ const MailLeads = () => {
                 const workbook = XLSX.read(binaryString, { type: "binary" });
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
-                const rawData = XLSX.utils.sheet_to_json<any>(sheet);
+                
+                interface ExcelData {
+                    Name?: string;
+                    name?: string;
+                    Email?: string;
+                    email?: string;
+                    Phone?: string;
+                    phone?: string;
+                }
+                
+                const rawData = XLSX.utils.sheet_to_json<ExcelData>(sheet);
 
                 // Clean and validate the data
                 const parsedData: ExcelRow[] = rawData.map(row => ({
                     name: String(row.name || row.Name || "").trim(),
                     email: String(row.email || row.Email || "").trim().toLowerCase(),
                     phone: String(row.phone || row.Phone || "").trim(),
-                    addedAt: new Date().toISOString() // Add current time for each lead
+                    addedAt: new Date().toISOString()
                 }));
 
                 let successCount = 0;

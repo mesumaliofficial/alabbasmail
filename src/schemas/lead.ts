@@ -1,4 +1,6 @@
-export default {
+import { SchemaTypeDefinition } from 'sanity';
+
+const leadSchema: SchemaTypeDefinition = {
     name: 'lead',
     title: 'Lead',
     type: 'document',
@@ -7,31 +9,33 @@ export default {
             name: 'name',
             title: 'Name',
             type: 'string',
-            validation: (Rule: any) => Rule.required(),
+            validation: (Rule) => Rule.required().min(2).max(100)
         },
         {
             name: 'email',
             title: 'Email',
             type: 'string',
-            validation: (Rule: any) => Rule.required().email(),
+            validation: (Rule) => Rule.required().email()
         },
         {
             name: 'phone',
             title: 'Phone',
             type: 'string',
-            validation: (Rule: any) => Rule.required(),
+            validation: (Rule) => Rule.required()
         },
         {
             name: 'addedAt',
             title: 'Added At',
             type: 'datetime',
-            validation: (Rule: any) => Rule.required(),
-        },
+            validation: (Rule) => Rule.required()
+        }
     ],
     preview: {
         select: {
             title: 'name',
-            subtitle: 'email',
-        },
-    },
-} 
+            subtitle: 'email'
+        }
+    }
+};
+
+export default leadSchema; 
